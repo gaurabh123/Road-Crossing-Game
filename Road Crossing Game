@@ -1,0 +1,278 @@
+int noOfLanes = 9;
+int sizeOfLanes;
+
+final int noOfLives = 7;
+int noOfScore = 7;
+int livesLeft = noOfLives;
+int[] yAxisForLine = new int[noOfLanes];
+
+int tyreHeight = 4;
+int carHeight;
+int bodyWidth;
+
+float min_speed;
+float max_speed;
+
+float x3;
+float y3;
+int arcWidth;
+int arcHeight;
+PFont f;
+
+
+float count = 0;
+float speedForPed = height / 7;
+boolean moveUp = false;
+boolean moveBack = false;
+boolean moveLeft = false;
+boolean moveRight = false;
+boolean dash = true;
+
+color[] colors = new color[noOfLanes];
+float[] vehicle = new float[noOfLanes];
+int [] yPositionForCars = new int[noOfLanes];
+float[] speed = new float[noOfLanes];
+
+int[] data = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+void setup() {
+  size(1200, 400);
+  f = createFont("Arial", 100, true);
+  x3 = width / 2;
+  y3 = height / 1.05;
+  if (noOfLanes >= 1 && noOfLanes <= 3) {
+    sizeOfLanes = 100;
+  } else if (noOfLanes >= 4 && noOfLanes <= 5) {
+    sizeOfLanes = 60;
+  } else if (noOfLanes >= 6 && noOfLanes <= 7) {
+    sizeOfLanes = 40;
+  } else {
+    sizeOfLanes = 30;
+  }
+
+  for (int i = 0; i < noOfLanes; i++) {
+    yAxisForLine[i] = sizeOfLanes * i;
+  }
+
+  if (noOfLanes >= 1 && noOfLanes <= 3) {
+    bodyWidth = 60;
+    carHeight = 40;
+    min_speed = 5;
+    max_speed = 10;
+    arcWidth = width / 25;
+    arcHeight = height / 15;
+  } else if (noOfLanes >= 4 && noOfLanes <= 5) {
+    bodyWidth = 50;
+    carHeight = 30;
+    min_speed = 10;
+    max_speed = 15;
+    arcWidth = width / 25;
+    arcHeight = height / 15;
+  } else if (noOfLanes >= 6 && noOfLanes <= 7) {
+    bodyWidth = 40;
+    carHeight = 20;
+    min_speed = 5;
+    max_speed = 10;
+    arcWidth = width / 35;
+    arcHeight = height / 20;
+  } else {
+    bodyWidth = 30;
+    carHeight = 20;
+    min_speed = 5;
+    max_speed = 15;
+    arcWidth = width / 35;
+    arcHeight = height / 20;
+  }
+
+  for (int j = 0; j < noOfLanes; j++) {
+    colors[j] = color(random(10, 255), random(10, 255), random(10, 255));
+    vehicle[j] = random(0, width);
+    speed[j] = random(min_speed, max_speed);
+    yPositionForCars[j] = (sizeOfLanes * j) + 5;
+  }
+}
+
+void draw() {
+  background(0);
+  lanes();
+  circleDraw();
+  moveUpDown();
+  moveLeftRight();
+  checkCount();
+  checkLives();
+  checkCollission();
+  if (y3 <= 0) {
+    count = count + 1;
+    y3 = height / 1.05;
+  }
+  if (y3 >= height) {
+    y3 = height / 1.05;
+  }
+
+  if (count == noOfScore) {
+    stop();
+    background(#F70000);
+    textAlign(CENTER);
+    textFont(f);
+    text("YOU WIN!", 600, 200);
+    if (keyPressed) {
+      if (key == ENTER) {
+        setup();
+      }
+    }
+  }
+  if (livesLeft == 0) {
+    stop();
+    background(#F70000);
+    textAlign(CENTER);
+    textFont(f);
+    text("GAME OVER!", 600, 200);
+    if (keyPressed) {
+      if (key == ENTER) {
+        setup();
+      }
+    }
+  }
+}
+
+
+void lanes() {
+  boolean dash = true;
+  for (int k = 0; k < noOfLanes; k++) {
+    if (yAxisForLine[k] < height/1.2) {
+      for (int m = 0; m < width; m+=20) {
+        if (dash) stroke(0);
+        else stroke(255);
+        line(m, yAxisForLine[k], m+20, yAxisForLine[k]);
+        dash = !dash;
+      }
+
+
+      for (int l = 0; l < noOfLanes; l++) {
+        cars(bodyWidth, speed, vehicle[l], yPositionForCars[l], colors[l]);
+        
+      }
+      for (int i = 0; i < speed[k]; i++) {
+          vehicle[k]++;
+        }
+        if (vehicle[k] >= 1300) {
+          vehicle[k] = -bodyWidth;
+          speed[k] = random(min_speed, max_speed);
+        }
+    }
+  }
+}
+
+void cars(float carWidth, float[] speed, float x, float y, color c) {
+  for (int i = 0; i < noOfLanes; i++) {
+    rect(x + i * 1300, y, carWidth / 15, tyreHeight);
+    rect(x + i * 1300 + carWidth- 5, y, carWidth / 15, tyreHeight);
+    rect(x + i * 1300, y + tyreHeight + carHeight, carWidth / 15, tyreHeight);
+    rect(x + i * 1300 + carWidth - 5, y + tyreHeight + carHeight, carWidth / 15, tyreHeight);
+    fill(c);
+    rect(x + i * 1300, y + 25 * 0.2, carWidth, carHeight, 20, 22, 20, 22);
+  }
+}
+
+
+void circleDraw() {
+  arc(x3, y3, arcWidth, arcHeight, 0, PI+ PI / 2, PIE);
+  //circle(x3 - 9, y3 - 9, 5);
+}
+
+void moveUpDown() {
+  if (moveUp)
+  {
+    y3 -= speedForPed;
+  }
+  if (moveBack)
+  {
+    y3 += speedForPed;
+  }
+}
+
+void moveLeftRight() {
+  if (moveLeft)
+  {
+    x3 -= speedForPed;
+  }
+  if (moveRight)
+  {
+    x3 += speedForPed;
+  }
+}
+
+void keyPressed() {
+  if (keyCode == UP)
+  {
+    moveUp = true;
+  }
+  if (keyCode == DOWN)
+  {
+    moveBack = true;
+  }
+  if (keyCode == LEFT)
+  {
+    moveLeft = true;
+  }
+  if (keyCode == RIGHT)
+  {
+    moveRight = true;
+  }
+}
+
+void keyReleased() {
+  if (keyCode == UP)
+  {
+    moveUp = false;
+  }
+  if (keyCode == DOWN)
+  {
+    moveBack = false;
+  }
+  if (keyCode == LEFT)
+  {
+    moveLeft = false;
+  }
+  if (keyCode == RIGHT)
+  {
+    moveRight = false;
+  }
+}
+
+
+void checkCount() {
+  textAlign(CENTER);
+  textSize(20);
+  text("Score:" + count, width/1.11, height/1.1);
+  fill(128);
+}
+void checkLives() {
+  textAlign(CENTER);
+  textSize(20);
+  text("Lives Left: " + livesLeft, width / 1.3, height / 1.1 );
+  fill(128);
+}
+void checkCollission() {
+  for (int k =0; k < noOfLanes; k++) {
+    float vehicleX = vehicle[k];
+    float vehicleY = yPositionForCars[k];
+    float vehicleWid = bodyWidth;
+    float vehicleHei = carHeight;
+    float arcX = x3 - 25 ;
+    float arcY = y3 - 15;
+    float arcWid = arcWidth;
+    float arcHei = arcHeight;
+    noFill();
+    noStroke();
+    rect(vehicleX, vehicleY, vehicleWid, vehicleHei);
+    rect(arcX, arcY, arcWid, arcHei);
+    stroke(0);
+
+    if (vehicleX + vehicleWid >= arcX && vehicleX <= arcX + arcWid && vehicleY + vehicleHei >= arcY && vehicleY <= arcY + arcHei) {
+      livesLeft = livesLeft - 1;
+      y3 = height / 1.05;
+    } else {
+      continue;
+    }
+  }
+}
